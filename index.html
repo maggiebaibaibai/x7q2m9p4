@@ -14,8 +14,8 @@
 --ink:rgba(255,255,255,.92);
 --ink-dim:rgba(255,255,255,.55);
 --ink-faint:rgba(255,255,255,.32);
---bubble:rgba(16,16,20,.68);
---bubble-her:rgba(52,18,26,.62);
+--bubble:rgba(16,16,20,.8);
+--bubble-her:rgba(52,18,26,.74);
 --line:rgba(255,255,255,.12);
 --accent:#c8404f;
 }
@@ -47,7 +47,6 @@ header .iconbtn.on{color:#fff;border-color:rgba(255,255,255,.35)}
 .row.her{align-self:flex-end;align-items:flex-end}
 .bubble{background:var(--bubble);border:1px solid rgba(255,255,255,.09);
 border-radius:18px;padding:10px 13px;font-size:15.5px;line-height:1.65;
-backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
 box-shadow:0 4px 18px rgba(0,0,0,.35);white-space:pre-wrap;word-break:break-word}
 .row.her .bubble{background:var(--bubble-her)}
 .bubble .meta{display:flex;justify-content:flex-end;align-items:center;gap:5px;
@@ -259,7 +258,9 @@ row.appendChild(b);return row;
 }
 function renderAll(){chatEl.innerHTML="";const s=cur();
 s.msgs.forEach(m=>chatEl.appendChild(msgEl(m)));chatEl.scrollTop=chatEl.scrollHeight}
-function scrollDown(){chatEl.scrollTop=chatEl.scrollHeight}
+function scrollDown(force){
+if(force||chatEl.scrollHeight-chatEl.scrollTop-chatEl.clientHeight<140)
+chatEl.scrollTop=chatEl.scrollHeight}
 
 /* ---------- OpenRouter ---------- */
 function headers(){return{"Content-Type":"application/json",
@@ -325,23 +326,24 @@ const s=cur();
 s.msgs.push({r:"u",t:text,ts:Date.now()});
 if(s.msgs.length===1)s.title=text.slice(0,14);
 persist();chatEl.appendChild(msgEl(s.msgs[s.msgs.length-1]));
-inputEl.value="";inputEl.style.height="auto";scrollDown();
+inputEl.value="";inputEl.style.height="auto";scrollDown(true);
 // assistant 骨架
 const row=document.createElement("div");row.className="row him";
 const sp=document.createElement("span");sp.className="spark";sp.textContent="✦";row.appendChild(sp);
 const b=document.createElement("div");b.className="bubble";
 b.innerHTML=`<span class="txt typing">···</span><span class="meta"><span>${fmt(Date.now())}</span></span>`;
-row.appendChild(b);chatEl.appendChild(row);scrollDown();
-const txtEl=b.querySelector(".txt");let full="",label=null,gotClose=false;
-const paint=()=>{
+row.appendChild(b);chatEl.appendChild(row);scrollDown(true);
+const txtEl=b.querySelector(".txt");let full="",label=null,gotClose=false,paintQueued=false;
+const paint=()=>{paintQueued=false;
 const m=full.match(/<thought>([\s\S]*?)(<\/thought>|$)/);
 let disp=full;
 if(m){disp=full.slice(0,m.index)+full.slice(m.index+m[0].length);
 if(m[2]==="</thought>"&&!gotClose){gotClose=true;
 if(m[1].trim()&&!document.body.classList.contains("hide-thought")){
 label=thoughtEl(m[1].trim());row.insertBefore(label,sp.nextSibling)}}}
-txtEl.classList.remove("typing");txtEl.textContent=disp.trim();scrollDown();
-};
+txtEl.classList.remove("typing");txtEl.textContent=disp.trim();scrollDown()};
+const queuePaint=()=>{if(paintQueued)return;paintQueued=true;
+requestAnimationFrame(paint)};
 try{
 const res=await fetch("https://openrouter.ai/api/v1/chat/completions",{
 method:"POST",headers:headers(),
@@ -357,12 +359,12 @@ if(!line)continue;const d=line.slice(5).trim();
 if(d==="[DONE]")continue;
 try{const j=JSON.parse(d);
 const c=j.choices&&j.choices[0]&&j.choices[0].delta&&j.choices[0].delta.content||"";
-if(c){full+=c;paint()}}catch(e){}}}
+if(c){full+=c;queuePaint()}}catch(e){}}}
 }catch(e){txtEl.classList.remove("typing");txtEl.textContent="没发出去，检查一下 Key 和网络，再试一次。";
 sending=false;sendBtn.disabled=false;return}
 const{thought,reply}=splitThought(full);
 s.msgs.push({r:"a",t:reply||"…",th:thought||"",ts:Date.now()});persist();
-row.replaceWith(msgEl(s.msgs[s.msgs.length-1]));scrollDown();
+row.replaceWith(msgEl(s.msgs[s.msgs.length-1]));scrollDown(true);
 sending=false;sendBtn.disabled=false;
 }
 let sending=false;
