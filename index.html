@@ -156,7 +156,13 @@ border-radius:12px;color:var(--ink);padding:11px 12px;font-size:14px;outline:non
 <select id="setProvider">
 <option value="openrouter">OpenRouter</option>
 <option value="deepseek">DeepSeek 官网直连</option>
+<option value="anthropic">Muse 官网直连 (Anthropic)</option>
 </select>
+</div>
+<div class="frow" id="claudeKeyRow" hidden>
+<label>Anthropic Key（只存在这台手机浏览器里）</label>
+<input type="password" id="setClaudeKey" placeholder="sk-ant-…">
+<div class="hint">去 <a href="https://console.anthropic.com/" target="_blank">console.anthropic.com</a> 注册充值，API Keys 里创建。按量计费，比 DeepSeek 贵不少。</div>
 </div>
 <div class="frow" id="orKeyRow">
 <label>OpenRouter API Key（只存在这台手机浏览器里）</label>
@@ -194,12 +200,17 @@ border-radius:12px;color:var(--ink);padding:11px 12px;font-size:14px;outline:non
 
 <div id="setup">
 <div class="card">
-<h2>连上 DeepSeek</h2>
+<h2>连上大模型</h2>
 <p>这个页面直接在你手机浏览器里跑，Key 只存在这台手机里，我看不到。</p>
 <div class="frow"><label>服务商</label><select id="setupProvider">
 <option value="openrouter">OpenRouter</option>
 <option value="deepseek">DeepSeek 官网直连</option>
+<option value="anthropic">Muse 官网直连 (Anthropic)</option>
 </select></div>
+<ol id="setupStepsCl" hidden>
+<li>去 <a href="https://console.anthropic.com/" target="_blank">console.anthropic.com</a> 注册并充值</li>
+<li>左侧 API Keys 里创建一个 key（sk-ant- 开头，只显示一次），贴到下面。按量计费，比 DeepSeek 贵不少</li>
+</ol>
 <ol id="setupStepsOr">
 <li>去 <a href="https://openrouter.ai/" target="_blank">openrouter.ai</a> 注册，左边 Keys 页面建一个 Key</li>
 <li>把 Key 贴到下面，模型默认选带 <b>:free</b> 的免费模型，不花钱</li>
@@ -249,11 +260,12 @@ set(k,v){try{localStorage.setItem("qc_"+k,JSON.stringify(v))}catch(e){}}
 let key=store.get("key",""), model=store.get("model",""),
 temp=store.get("temp",0.9), bg=store.get("bg",""),
 sessions=store.get("sessions",[]), sid=store.get("sid",""),
-provider=store.get("provider","openrouter"), dskey=store.get("dskey","");
-const activeKey=()=>provider==="deepseek"?dskey:key;
+provider=store.get("provider","openrouter"), dskey=store.get("dskey",""),
+claudekey=store.get("claudekey","");
+const activeKey=()=>provider==="deepseek"?dskey:(provider==="anthropic"?claudekey:key);
 function persist(){store.set("key",key);store.set("model",model);store.set("temp",temp);
 store.set("bg",bg);store.set("sessions",sessions);store.set("sid",sid);
-store.set("provider",provider);store.set("dskey",dskey)}
+store.set("provider",provider);store.set("dskey",dskey);store.set("claudekey",claudekey)}
 function cur(){let s=sessions.find(s=>s.id===sid);
 if(!s){s={id:"s"+Date.now(),title:"新的对话",msgs:[]};sessions.unshift(s);sid=s.id;persist()}return s}
 
@@ -286,11 +298,17 @@ chatEl.scrollTop=chatEl.scrollHeight}
 
 /* ---------- 服务商 ---------- */
 function headers(){
+if(provider==="anthropic")return{"Content-Type":"application/json",
+"x-api-key":claudekey,
+"anthropic-version":"2023-06-01",
+"anthropic-dangerous-direct-browser-access":"true"};
 if(provider==="deepseek")return{"Content-Type":"application/json",
 "Authorization":"Bearer "+dskey};
 return{"Content-Type":"application/json",
 "Authorization":"Bearer "+key,"HTTP-Referer":location.href,"X-Title":"QinChe Chat"}}
-const apiUrl=()=>provider==="deepseek"
+const apiUrl=()=>provider==="anthropic"
+?"https://api.anthropic.com/v1/messages"
+:provider==="deepseek"
 ?"https://api.deepseek.com/chat/completions"
 :"https://openrouter.ai/api/v1/chat/completions";
 const isFreeModel=id=>/:free$/i.test(id||"");
@@ -303,6 +321,14 @@ sel.innerHTML="";
 ["deepseek-v4-pro","deepseek-v4-pro · 官网（更强，贵一点）"]].forEach(([id,label])=>{
 const o=document.createElement("option");o.value=id;o.textContent=label;sel.appendChild(o)});
 if(!["deepseek-flash","deepseek-v4-pro"].includes(model)){model="deepseek-flash";persist()}
+sel.value=model;updateModelHint();return}
+if(provider==="anthropic"){
+sel.innerHTML="";
+[["claude-sonnet-4-6","Muse · 官网（均衡，推荐）"],
+["claude-haiku-4-5","Haiku 4.5 · 官网（最快最便宜）"],
+["claude-opus-4-8","Opus 4.8 · 官网（最强，最贵）"]].forEach(([id,label])=>{
+const o=document.createElement("option");o.value=id;o.textContent=label;sel.appendChild(o)});
+if(!["claude-sonnet-4-6","claude-haiku-4-5","claude-opus-4-8"].includes(model)){model="claude-sonnet-4-6";persist()}
 sel.value=model;updateModelHint();return}
 sel.innerHTML="<option>加载中…</option>";
 try{
@@ -339,6 +365,9 @@ sel.appendChild(o);sel.value=model;updateModelHint()}}
 function updateModelHint(){
 const h=$("#modelHint");if(!h)return;
 if(!model){h.textContent="还没选模型。";return}
+if(provider==="anthropic"){
+h.innerHTML="Muse 官网直连 <b>"+model+"</b>：按量计费（Haiku 最便宜，Opus 最贵），比 DeepSeek 贵不少。";
+return}
 if(provider==="deepseek"){
 h.innerHTML="官网直连 <b>"+model+"</b>：走你的 DeepSeek 账号试用额度/余额。";
 return}
@@ -353,6 +382,16 @@ if(m.r==="u")msgs.push({role:"user",content:m.t});
 else msgs.push({role:"assistant",content:(m.th?`<thought>${m.th}</thought>\n`:"")+m.t})});
 return msgs;
 }
+function buildAnthropicMessages(){
+const out=[];
+cur().msgs.slice(-40).forEach(m=>{
+const content=m.r==="u"?m.t:((m.th?`<thought>${m.th}</thought>\n`:"")+m.t);
+const role=m.r==="u"?"user":"assistant";
+if(out.length&&out[out.length-1].role===role)
+out[out.length-1].content+="\n"+content;
+else out.push({role,content})});
+return out;
+}
 function splitThought(full){
 const m=full.match(/<thought>([\s\S]*?)(<\/thought>|$)/);
 if(!m)return{thought:"",reply:full.trim()};
@@ -363,7 +402,7 @@ const text=inputEl.value.trim();
 if(!text||sending)return;
 if(!activeKey()){$("#setup").classList.add("open");return}
 if(!model){alert("先去设置里选一个模型");return}
-if((provider==="deepseek"||!isFreeModel(model))&&!store.get("paidOk_"+model,false)){
+if((provider!=="openrouter"||!isFreeModel(model))&&!store.get("paidOk_"+model,false)){
 if(!confirm("当前模型 "+model+" 会消耗额度或产生费用。继续发送吗？"))return;
 store.set("paidOk_"+model,true)}
 sending=true;sendBtn.disabled=true;
@@ -403,7 +442,9 @@ await new Promise(r=>setTimeout(r,2500))}
 try{
 const res=await fetch(apiUrl(),{
 method:"POST",headers:headers(),
-body:JSON.stringify({model,stream:true,temperature:temp,max_tokens:1500,messages:buildMessages()})});
+body:JSON.stringify(provider==="anthropic"
+?{model,max_tokens:1500,system:SYSTEM,messages:buildAnthropicMessages(),stream:true}
+:{model,stream:true,temperature:temp,max_tokens:1500,messages:buildMessages()})});
 if(!res.ok){
 if(res.status===429)throw new Error("429 限流：免费模型有次数限制，等一两分钟再试，或去设置里换个模型");
 throw new Error(await errInfo(res))}
@@ -416,7 +457,11 @@ const line=p.split("\n").map(l=>l.trim()).find(l=>l.startsWith("data:"));
 if(!line)continue;const d=line.slice(5).trim();
 if(d==="[DONE]")continue;
 try{const j=JSON.parse(d);
-const c=j.choices&&j.choices[0]&&j.choices[0].delta&&j.choices[0].delta.content||"";
+let c="";
+if(provider==="anthropic"){
+if(j.type==="content_block_delta"&&j.delta&&j.delta.text)c=j.delta.text;
+}else{
+c=j.choices&&j.choices[0]&&j.choices[0].delta&&j.choices[0].delta.content||""}
 if(c){full+=c;queuePaint()}}catch(e){}}}
 break;
 }catch(e){
@@ -461,9 +506,10 @@ box.appendChild(d)});
 $("#btnNewSess").onclick=()=>{sid="";persist();renderAll();closeSheets()};
 function openSettings(){
 $("#setProvider").value=provider;
-$("#setKey").value=key;$("#setDsKey").value=dskey;
+$("#setKey").value=key;$("#setDsKey").value=dskey;$("#setClaudeKey").value=claudekey;
 $("#orKeyRow").hidden=provider!=="openrouter";
 $("#dsKeyRow").hidden=provider!=="deepseek";
+$("#claudeKeyRow").hidden=provider!=="anthropic";
 $("#setTemp").value=temp;$("#tempVal").textContent=temp;
 loadModels();
 }
@@ -471,12 +517,14 @@ $("#setProvider").onchange=()=>{
 provider=$("#setProvider").value;
 $("#orKeyRow").hidden=provider!=="openrouter";
 $("#dsKeyRow").hidden=provider!=="deepseek";
+$("#claudeKeyRow").hidden=provider!=="anthropic";
 loadModels()};
 $("#setTemp").oninput=e=>$("#tempVal").textContent=e.target.value;
 $("#setModel").onchange=()=>{model=$("#setModel").value;updateModelHint()};
 $("#btnSave").onclick=()=>{
 provider=$("#setProvider").value;
 key=$("#setKey").value.trim();dskey=$("#setDsKey").value.trim();
+claudekey=$("#setClaudeKey").value.trim();
 model=$("#setModel").value;
 temp=parseFloat($("#setTemp").value);
 store.set("modelPicked",true);persist();closeSheets();
@@ -495,14 +543,16 @@ $("#btnBgReset").onclick=()=>{bg="";persist();applyBg()};
 function applyBg(){$("#bg").style.backgroundImage=
 bg?`url("${bg}")`:`url("bg.jpg")`}
 $("#setupProvider").onchange=()=>{
-const ds=$("#setupProvider").value==="deepseek";
-$("#setupStepsOr").hidden=ds;$("#setupStepsDs").hidden=!ds;
-$("#setupKey").placeholder=ds?"sk-…":"sk-or-v1-…"};
+const p=$("#setupProvider").value;
+$("#setupStepsOr").hidden=p!=="openrouter";
+$("#setupStepsDs").hidden=p!=="deepseek";
+$("#setupStepsCl").hidden=p!=="anthropic";
+$("#setupKey").placeholder=p==="deepseek"?"sk-…":(p==="anthropic"?"sk-ant-…":"sk-or-v1-…")};
 $("#setupGo").onclick=()=>{
 provider=$("#setupProvider").value;
 const v=$("#setupKey").value.trim();
 if(!v){alert("先贴 Key");return}
-if(provider==="deepseek")dskey=v;else key=v;
+if(provider==="deepseek")dskey=v;else if(provider==="anthropic")claudekey=v;else key=v;
 persist();$("#setup").classList.remove("open");loadModels()};
 
 /* ---------- 启动 ---------- */
