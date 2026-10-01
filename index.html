@@ -299,10 +299,10 @@ async function loadModels(){
 const sel=$("#setModel");
 if(provider==="deepseek"){
 sel.innerHTML="";
-[["deepseek-chat","deepseek-chat · 官网（日常聊天）"],
-["deepseek-reasoner","deepseek-reasoner · 官网（深度思考，慢一点）"]].forEach(([id,label])=>{
+[["deepseek-flash","deepseek-flash · 官网（日常聊天，最便宜）"],
+["deepseek-v4-pro","deepseek-v4-pro · 官网（更强，贵一点）"]].forEach(([id,label])=>{
 const o=document.createElement("option");o.value=id;o.textContent=label;sel.appendChild(o)});
-if(!["deepseek-chat","deepseek-reasoner"].includes(model)){model="deepseek-chat";persist()}
+if(!["deepseek-flash","deepseek-v4-pro"].includes(model)){model="deepseek-flash";persist()}
 sel.value=model;updateModelHint();return}
 sel.innerHTML="<option>加载中…</option>";
 try{
