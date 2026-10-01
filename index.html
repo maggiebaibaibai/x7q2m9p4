@@ -389,7 +389,11 @@ label=thoughtEl(m[1].trim());row.insertBefore(label,sp.nextSibling)}}}
 txtEl.classList.remove("typing");txtEl.textContent=disp.trim();scrollDown()};
 const queuePaint=()=>{if(paintQueued)return;paintQueued=true;
 requestAnimationFrame(paint)};
-const transient=e=>/HTTP (429|5\d\d)|Failed to fetch|NetworkError|Load failed/i.test((e&&e.message)||"");
+const retryable=e=>/HTTP 5\d\d|Failed to fetch|NetworkError|Load failed/i.test((e&&e.message)||"");
+const errInfo=async res=>{let s="HTTP "+res.status;
+try{const j=await res.clone().json();
+const m=j.error&&j.error.message;if(m)s+=" · "+String(m).slice(0,80)}catch(e){}
+return s};
 for(let attempt=0;attempt<2;attempt++){
 if(attempt>0){
 full="";gotClose=false;paintQueued=false;
@@ -400,7 +404,9 @@ try{
 const res=await fetch(apiUrl(),{
 method:"POST",headers:headers(),
 body:JSON.stringify({model,stream:true,temperature:temp,max_tokens:1500,messages:buildMessages()})});
-if(!res.ok)throw new Error("HTTP "+res.status);
+if(!res.ok){
+if(res.status===429)throw new Error("429 限流：免费模型有次数限制，等一两分钟再试，或去设置里换个模型");
+throw new Error(await errInfo(res))}
 const reader=res.body.getReader(),dec=new TextDecoder();let buf="";
 while(true){const{done,value}=await reader.read();if(done)break;
 buf+=dec.decode(value,{stream:true});
@@ -414,7 +420,7 @@ const c=j.choices&&j.choices[0]&&j.choices[0].delta&&j.choices[0].delta.content|
 if(c){full+=c;queuePaint()}}catch(e){}}}
 break;
 }catch(e){
-if(attempt===0&&transient(e))continue;
+if(attempt===0&&retryable(e))continue;
 txtEl.classList.remove("typing");
 txtEl.textContent="没发出去（"+((e&&e.message)||"网络错误")+"），再试一次。";
 sending=false;sendBtn.disabled=false;return}
