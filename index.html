@@ -152,9 +152,21 @@ border-radius:12px;color:var(--ink);padding:11px 12px;font-size:14px;outline:non
 <div class="panel">
 <h2>设置</h2>
 <div class="frow">
+<label>服务商</label>
+<select id="setProvider">
+<option value="openrouter">OpenRouter</option>
+<option value="deepseek">DeepSeek 官网直连</option>
+</select>
+</div>
+<div class="frow" id="orKeyRow">
 <label>OpenRouter API Key（只存在这台手机浏览器里）</label>
 <input type="password" id="setKey" placeholder="sk-or-v1-…">
 <div class="hint">去 <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a> 创建。只用免费模型的话不需要充值。</div>
+</div>
+<div class="frow" id="dsKeyRow" hidden>
+<label>DeepSeek 官网 Key（只存在这台手机浏览器里）</label>
+<input type="password" id="setDsKey" placeholder="sk-…">
+<div class="hint">去 <a href="https://platform.deepseek.com/" target="_blank">platform.deepseek.com</a> 注册，左侧 API Keys 创建。新号有试用额度。</div>
 </div>
 <div class="frow">
 <label>模型</label>
@@ -182,12 +194,19 @@ border-radius:12px;color:var(--ink);padding:11px 12px;font-size:14px;outline:non
 
 <div id="setup">
 <div class="card">
-<h2>先连上 DeepSeek</h2>
+<h2>连上 DeepSeek</h2>
 <p>这个页面直接在你手机浏览器里跑，Key 只存在这台手机里，我看不到。</p>
-<ol>
-<li>去 <a href="https://openrouter.ai/" target="_blank">openrouter.ai</a> 注册</li>
-<li>左边 Keys 页面建一个 Key，贴到下面</li>
-<li>模型默认选带 <b>:free</b> 的免费模型，不花钱</li>
+<div class="frow"><label>服务商</label><select id="setupProvider">
+<option value="openrouter">OpenRouter</option>
+<option value="deepseek">DeepSeek 官网直连</option>
+</select></div>
+<ol id="setupStepsOr">
+<li>去 <a href="https://openrouter.ai/" target="_blank">openrouter.ai</a> 注册，左边 Keys 页面建一个 Key</li>
+<li>把 Key 贴到下面，模型默认选带 <b>:free</b> 的免费模型，不花钱</li>
+</ol>
+<ol id="setupStepsDs" hidden>
+<li>去 <a href="https://platform.deepseek.com/" target="_blank">platform.deepseek.com</a> 注册并验证邮箱</li>
+<li>左侧 API Keys 里创建一个 key，复制好（只显示一次），贴到下面。新号有试用额度。</li>
 </ol>
 <input type="password" id="setupKey" placeholder="sk-or-v1-…">
 <button class="btn primary" id="setupGo" style="width:100%">开始聊天</button>
@@ -229,9 +248,12 @@ set(k,v){try{localStorage.setItem("qc_"+k,JSON.stringify(v))}catch(e){}}
 };
 let key=store.get("key",""), model=store.get("model",""),
 temp=store.get("temp",0.9), bg=store.get("bg",""),
-sessions=store.get("sessions",[]), sid=store.get("sid","");
+sessions=store.get("sessions",[]), sid=store.get("sid",""),
+provider=store.get("provider","openrouter"), dskey=store.get("dskey","");
+const activeKey=()=>provider==="deepseek"?dskey:key;
 function persist(){store.set("key",key);store.set("model",model);store.set("temp",temp);
-store.set("bg",bg);store.set("sessions",sessions);store.set("sid",sid)}
+store.set("bg",bg);store.set("sessions",sessions);store.set("sid",sid);
+store.set("provider",provider);store.set("dskey",dskey)}
 function cur(){let s=sessions.find(s=>s.id===sid);
 if(!s){s={id:"s"+Date.now(),title:"新的对话",msgs:[]};sessions.unshift(s);sid=s.id;persist()}return s}
 
@@ -262,13 +284,27 @@ function scrollDown(force){
 if(force||chatEl.scrollHeight-chatEl.scrollTop-chatEl.clientHeight<140)
 chatEl.scrollTop=chatEl.scrollHeight}
 
-/* ---------- OpenRouter ---------- */
-function headers(){return{"Content-Type":"application/json",
+/* ---------- 服务商 ---------- */
+function headers(){
+if(provider==="deepseek")return{"Content-Type":"application/json",
+"Authorization":"Bearer "+dskey};
+return{"Content-Type":"application/json",
 "Authorization":"Bearer "+key,"HTTP-Referer":location.href,"X-Title":"QinChe Chat"}}
+const apiUrl=()=>provider==="deepseek"
+?"https://api.deepseek.com/chat/completions"
+:"https://openrouter.ai/api/v1/chat/completions";
 const isFreeModel=id=>/:free$/i.test(id||"");
 const dsScore=m=>/reasoner/i.test(m.id)?2:(/chat/i.test(m.id)?0:1);
 async function loadModels(){
-const sel=$("#setModel");sel.innerHTML="<option>加载中…</option>";
+const sel=$("#setModel");
+if(provider==="deepseek"){
+sel.innerHTML="";
+[["deepseek-chat","deepseek-chat · 官网（日常聊天）"],
+["deepseek-reasoner","deepseek-reasoner · 官网（深度思考，慢一点）"]].forEach(([id,label])=>{
+const o=document.createElement("option");o.value=id;o.textContent=label;sel.appendChild(o)});
+if(!["deepseek-chat","deepseek-reasoner"].includes(model)){model="deepseek-chat";persist()}
+sel.value=model;updateModelHint();return}
+sel.innerHTML="<option>加载中…</option>";
 try{
 const r=await fetch("https://openrouter.ai/api/v1/models",{headers:headers()});
 const j=await r.json();
@@ -297,6 +333,9 @@ sel.appendChild(o);sel.value=model;updateModelHint()}}
 function updateModelHint(){
 const h=$("#modelHint");if(!h)return;
 if(!model){h.textContent="还没选模型。";return}
+if(provider==="deepseek"){
+h.innerHTML="官网直连 <b>"+model+"</b>：走你的 DeepSeek 账号试用额度/余额。";
+return}
 h.innerHTML=isFreeModel(model)
 ?"当前是<b>免费</b>模型，不收 token 费用（每天有次数限制）。"
 :"当前是<b>付费</b>模型，会从你的 OpenRouter 余额扣费。";
@@ -316,10 +355,10 @@ return{thought:m[1].trim(),reply:(full.slice(0,m.index)+full.slice(m.index+m[0].
 async function send(){
 const text=inputEl.value.trim();
 if(!text||sending)return;
-if(!key){$("#setup").classList.add("open");return}
+if(!activeKey()){$("#setup").classList.add("open");return}
 if(!model){alert("先去设置里选一个模型");return}
-if(!isFreeModel(model)&&!store.get("paidOk_"+model,false)){
-if(!confirm("当前模型 "+model+" 是付费模型，会产生费用。继续发送吗？"))return;
+if((provider==="deepseek"||!isFreeModel(model))&&!store.get("paidOk_"+model,false)){
+if(!confirm("当前模型 "+model+" 会消耗额度或产生费用。继续发送吗？"))return;
 store.set("paidOk_"+model,true)}
 sending=true;sendBtn.disabled=true;
 const s=cur();
@@ -345,7 +384,7 @@ txtEl.classList.remove("typing");txtEl.textContent=disp.trim();scrollDown()};
 const queuePaint=()=>{if(paintQueued)return;paintQueued=true;
 requestAnimationFrame(paint)};
 try{
-const res=await fetch("https://openrouter.ai/api/v1/chat/completions",{
+const res=await fetch(apiUrl(),{
 method:"POST",headers:headers(),
 body:JSON.stringify({model,stream:true,temperature:temp,max_tokens:1500,messages:buildMessages()})});
 if(!res.ok)throw new Error("HTTP "+res.status);
@@ -397,16 +436,27 @@ box.appendChild(d)});
 }
 $("#btnNewSess").onclick=()=>{sid="";persist();renderAll();closeSheets()};
 function openSettings(){
-$("#setKey").value=key;$("#setTemp").value=temp;$("#tempVal").textContent=temp;
+$("#setProvider").value=provider;
+$("#setKey").value=key;$("#setDsKey").value=dskey;
+$("#orKeyRow").hidden=provider!=="openrouter";
+$("#dsKeyRow").hidden=provider!=="deepseek";
+$("#setTemp").value=temp;$("#tempVal").textContent=temp;
 loadModels();
 }
+$("#setProvider").onchange=()=>{
+provider=$("#setProvider").value;
+$("#orKeyRow").hidden=provider!=="openrouter";
+$("#dsKeyRow").hidden=provider!=="deepseek";
+loadModels()};
 $("#setTemp").oninput=e=>$("#tempVal").textContent=e.target.value;
 $("#setModel").onchange=()=>{model=$("#setModel").value;updateModelHint()};
 $("#btnSave").onclick=()=>{
-key=$("#setKey").value.trim();model=$("#setModel").value;
+provider=$("#setProvider").value;
+key=$("#setKey").value.trim();dskey=$("#setDsKey").value.trim();
+model=$("#setModel").value;
 temp=parseFloat($("#setTemp").value);
 store.set("modelPicked",true);persist();closeSheets();
-if(key)$("#setup").classList.remove("open")};
+if(activeKey())$("#setup").classList.remove("open")};
 $("#btnClear").onclick=()=>{if(confirm("清空当前会话？")){cur().msgs=[];persist();renderAll();closeSheets()}};
 $("#btnBg").onclick=()=>$("#bgFile").click();
 $("#bgFile").onchange=e=>{
@@ -420,15 +470,21 @@ img.src=URL.createObjectURL(f)};
 $("#btnBgReset").onclick=()=>{bg="";persist();applyBg()};
 function applyBg(){$("#bg").style.backgroundImage=
 bg?`url("${bg}")`:`url("bg.jpg")`}
+$("#setupProvider").onchange=()=>{
+const ds=$("#setupProvider").value==="deepseek";
+$("#setupStepsOr").hidden=ds;$("#setupStepsDs").hidden=!ds;
+$("#setupKey").placeholder=ds?"sk-…":"sk-or-v1-…"};
 $("#setupGo").onclick=()=>{
+provider=$("#setupProvider").value;
 const v=$("#setupKey").value.trim();
 if(!v){alert("先贴 Key");return}
-key=v;persist();$("#setup").classList.remove("open");loadModels()};
+if(provider==="deepseek")dskey=v;else key=v;
+persist();$("#setup").classList.remove("open");loadModels()};
 
 /* ---------- 启动 ---------- */
 applyBg();
 $("#setTemp").value=temp;
-if(!key)$("#setup").classList.add("open");
+if(!activeKey())$("#setup").classList.add("open");
 else if(!store.get("modelPicked",false)&&!isFreeModel(model))loadModels();
 renderAll();
 </script>
