@@ -160,7 +160,7 @@ border-radius:12px;color:var(--ink);padding:11px 12px;font-size:14px;outline:non
 <div class="frow">
 <label>模型</label>
 <select id="setModel"></select>
-<div class="hint" id="modelHint">从 OpenRouter 实时拉取，默认优先选免费（:free）模型。</div>
+<div class="hint" id="modelHint">从 OpenRouter 实时拉取；不手动选也会自动用免费（:free）模型。</div>
 </div>
 <div class="frow">
 <label>温度 <span id="tempVal">0.9</span></label>
@@ -283,7 +283,8 @@ const list=[...freeDs,...freeOther,...paidDs];
 sel.innerHTML="";
 list.forEach(m=>{const o=document.createElement("option");o.value=m.id;
 o.textContent=m.id+(isFreeModel(m.id)?" · 免费":" · 付费");sel.appendChild(o)});
-if(!model||![...sel.options].some(o=>o.value===model)){
+const autoPick=!store.get("modelPicked",false)&&!isFreeModel(model);
+if(!model||autoPick||![...sel.options].some(o=>o.value===model)){
 model=(freeDs[0]&&freeDs[0].id)||(freeOther[0]&&freeOther[0].id)||
 (paidDs[0]&&paidDs[0].id)||"";persist()}
 sel.value=model;updateModelHint();
@@ -401,7 +402,8 @@ $("#setTemp").oninput=e=>$("#tempVal").textContent=e.target.value;
 $("#setModel").onchange=()=>{model=$("#setModel").value;updateModelHint()};
 $("#btnSave").onclick=()=>{
 key=$("#setKey").value.trim();model=$("#setModel").value;
-temp=parseFloat($("#setTemp").value);persist();closeSheets();
+temp=parseFloat($("#setTemp").value);
+store.set("modelPicked",true);persist();closeSheets();
 if(key)$("#setup").classList.remove("open")};
 $("#btnClear").onclick=()=>{if(confirm("清空当前会话？")){cur().msgs=[];persist();renderAll();closeSheets()}};
 $("#btnBg").onclick=()=>$("#bgFile").click();
@@ -425,6 +427,7 @@ key=v;persist();$("#setup").classList.remove("open");loadModels()};
 applyBg();
 $("#setTemp").value=temp;
 if(!key)$("#setup").classList.add("open");
+else if(!store.get("modelPicked",false)&&!isFreeModel(model))loadModels();
 renderAll();
 </script>
 </body>
