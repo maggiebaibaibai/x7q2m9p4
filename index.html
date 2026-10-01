@@ -29,15 +29,15 @@ padding-top:env(safe-area-inset-top)}
 /* 顶栏 */
 header{display:flex;align-items:center;gap:10px;padding:10px 14px;
 background:linear-gradient(180deg,rgba(0,0,0,.5),transparent);}
-header.back{font-size:26px;color:var(--ink-dim);background:none;border:none;padding:4px 8px;cursor:pointer}
-header.avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;
+header .back{font-size:26px;color:var(--ink-dim);background:none;border:none;padding:4px 8px;cursor:pointer}
+header .avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;
 box-shadow:0 0 0 1px var(--line)}
-header.who{flex:1;min-width:0}
-header.who.nm{font-size:16px;font-weight:600;letter-spacing:.5px}
-header.who.st{font-size:11px;color:var(--ink-dim);margin-top:1px}
-header.iconbtn{background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--ink-dim);
+header .who{flex:1;min-width:0}
+header .who .nm{font-size:16px;font-weight:600;letter-spacing:.5px}
+header .who .st{font-size:11px;color:var(--ink-dim);margin-top:1px}
+header .iconbtn{background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--ink-dim);
 border-radius:10px;padding:7px 10px;font-size:14px;cursor:pointer;backdrop-filter:blur(8px)}
-header.iconbtn.on{color:#fff;border-color:rgba(255,255,255,.35)}
+header .iconbtn.on{color:#fff;border-color:rgba(255,255,255,.35)}
 /* 聊天区 */
 #chat{flex:1;overflow-y:auto;padding:8px 14px 12px;display:flex;flex-direction:column;gap:2px;
 -webkit-overflow-scrolling:touch;scrollbar-width:none}
@@ -49,8 +49,8 @@ header.iconbtn.on{color:#fff;border-color:rgba(255,255,255,.35)}
 border-radius:18px;padding:10px 13px;font-size:15.5px;line-height:1.65;
 backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
 box-shadow:0 4px 18px rgba(0,0,0,.35);white-space:pre-wrap;word-break:break-word}
-.row.her.bubble{background:var(--bubble-her)}
-.bubble.meta{display:flex;justify-content:flex-end;align-items:center;gap:5px;
+.row.her .bubble{background:var(--bubble-her)}
+.bubble .meta{display:flex;justify-content:flex-end;align-items:center;gap:5px;
 margin-top:6px;font-size:10.5px;color:var(--ink-faint)}
 .ticks{color:rgba(255,255,255,.5);font-size:11px;letter-spacing:-2px}
 /* 思考过程标签 */
@@ -60,12 +60,12 @@ font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:12.5px;
 color:var(--ink-dim);letter-spacing:1.5px;padding:2px 4px}
 .thought button::before{content:"✦ ";font-size:10px}
 .thought button::after{content:" ✦";font-size:10px}
-.thought.tbody{display:none;margin-top:6px;background:rgba(10,10,14,.6);
+.thought .tbody{display:none;margin-top:6px;background:rgba(10,10,14,.6);
 border:1px solid var(--line);border-radius:14px;padding:10px 12px;
 font-size:13.5px;line-height:1.7;color:rgba(255,255,255,.78);
 backdrop-filter:blur(12px);white-space:pre-wrap}
-.thought.open.tbody{display:block}
-body.hide-thought.thought{display:none}
+.thought.open .tbody{display:block}
+body.hide-thought .thought{display:none}
 .spark{position:absolute;left:-14px;top:14px;color:rgba(255,255,255,.35);font-size:10px}
 /* 输入区 */
 #composer{padding:8px 12px calc(10px + env(safe-area-inset-bottom));
@@ -83,7 +83,7 @@ display:flex;align-items:center;justify-content:center}
 /* 抽屉 & 设置 */
 .sheet{position:fixed;inset:0;z-index:20;display:none}
 .sheet.open{display:block}
-.sheet.mask{position:absolute;inset:0;background:rgba(0,0,0,.6)}
+.sheet .mask{position:absolute;inset:0;background:rgba(0,0,0,.6)}
 .panel{position:absolute;left:0;right:0;bottom:0;max-height:82dvh;overflow-y:auto;
 background:rgba(14,14,17,.96);border-top:1px solid var(--line);
 border-radius:22px 22px 0 0;padding:20px 20px calc(24px + env(safe-area-inset-bottom));
@@ -95,7 +95,7 @@ backdrop-filter:blur(20px)}
 background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:12px;
 color:var(--ink);padding:11px 12px;font-size:14px;outline:none;font-family:inherit}
 .frow input[type=range]{width:100%}
-.frow.hint{font-size:11.5px;color:var(--ink-faint);margin-top:6px;line-height:1.6}
+.frow .hint{font-size:11.5px;color:var(--ink-faint);margin-top:6px;line-height:1.6}
 .btnrow{display:flex;gap:10px;margin-top:6px}
 .btn{flex:1;border-radius:14px;padding:12px;font-size:14.5px;border:1px solid var(--line);
 background:rgba(255,255,255,.07);color:var(--ink);cursor:pointer}
@@ -103,17 +103,17 @@ background:rgba(255,255,255,.07);color:var(--ink);cursor:pointer}
 .btn.danger{color:#e0707f}
 .sess{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid var(--line);
 border-radius:14px;margin-bottom:8px;background:rgba(255,255,255,.04);cursor:pointer}
-.sess.t{flex:1;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sess.x{background:none;border:none;color:var(--ink-faint);font-size:16px;cursor:pointer;padding:4px}
+.sess .t{flex:1;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sess .x{background:none;border:none;color:var(--ink-faint);font-size:16px;cursor:pointer;padding:4px}
 /* 首次引导 */
 #setup{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;
 padding:24px;background:rgba(0,0,0,.72);backdrop-filter:blur(10px)}
 #setup.open{display:flex}
-#setup.card{background:rgba(16,16,20,.97);border:1px solid var(--line);border-radius:20px;
+#setup .card{background:rgba(16,16,20,.97);border:1px solid var(--line);border-radius:20px;
 padding:26px 22px;max-width:340px;width:100%}
-#setup.card h2{font-size:17px;margin-bottom:10px}
-#setup.card p{font-size:13.5px;color:var(--ink-dim);line-height:1.8;margin-bottom:12px}
-#setup.card ol{font-size:13px;color:var(--ink-dim);line-height:1.9;margin:0 0 14px 18px}
+#setup .card h2{font-size:17px;margin-bottom:10px}
+#setup .card p{font-size:13.5px;color:var(--ink-dim);line-height:1.8;margin-bottom:12px}
+#setup .card ol{font-size:13px;color:var(--ink-dim);line-height:1.9;margin:0 0 14px 18px}
 #setup input{width:100%;background:rgba(255,255,255,.06);border:1px solid var(--line);
 border-radius:12px;color:var(--ink);padding:11px 12px;font-size:14px;outline:none;margin-bottom:12px}
 #setup a{color:#e0707f}
@@ -155,12 +155,12 @@ border-radius:12px;color:var(--ink);padding:11px 12px;font-size:14px;outline:non
 <div class="frow">
 <label>OpenRouter API Key（只存在这台手机浏览器里）</label>
 <input type="password" id="setKey" placeholder="sk-or-v1-…">
-<div class="hint">去 <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a> 创建。先充值几美元。</div>
+<div class="hint">去 <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a> 创建。只用免费模型的话不需要充值。</div>
 </div>
 <div class="frow">
 <label>模型</label>
 <select id="setModel"></select>
-<div class="hint">从 OpenRouter 实时拉取，默认选 deepseek 的 chat 模型。</div>
+<div class="hint" id="modelHint">从 OpenRouter 实时拉取，默认优先选免费（:free）模型。</div>
 </div>
 <div class="frow">
 <label>温度 <span id="tempVal">0.9</span></label>
@@ -187,8 +187,8 @@ border-radius:12px;color:var(--ink);padding:11px 12px;font-size:14px;outline:non
 <p>这个页面直接在你手机浏览器里跑，Key 只存在这台手机里，我看不到。</p>
 <ol>
 <li>去 <a href="https://openrouter.ai/" target="_blank">openrouter.ai</a> 注册</li>
-<li>Credits 里充几美元</li>
-<li>Keys 页面建一个 Key，贴到下面</li>
+<li>左边 Keys 页面建一个 Key，贴到下面</li>
+<li>模型默认选带 <b>:free</b> 的免费模型，不花钱</li>
 </ol>
 <input type="password" id="setupKey" placeholder="sk-or-v1-…">
 <button class="btn primary" id="setupGo" style="width:100%">开始聊天</button>
@@ -264,24 +264,40 @@ function scrollDown(){chatEl.scrollTop=chatEl.scrollHeight}
 /* ---------- OpenRouter ---------- */
 function headers(){return{"Content-Type":"application/json",
 "Authorization":"Bearer "+key,"HTTP-Referer":location.href,"X-Title":"QinChe Chat"}}
+const isFreeModel=id=>/:free$/i.test(id||"");
+const dsScore=m=>/reasoner/i.test(m.id)?2:(/chat/i.test(m.id)?0:1);
 async function loadModels(){
 const sel=$("#setModel");sel.innerHTML="<option>加载中…</option>";
 try{
 const r=await fetch("https://openrouter.ai/api/v1/models",{headers:headers()});
 const j=await r.json();
-const ds=(j.data||[]).filter(m=>/deepseek/i.test(m.id));
-ds.sort((a,b)=>{
-const s=m=>/reasoner/i.test(m.id)?2:(/chat/i.test(m.id)?0:1);
-return s(a)-s(b)||a.id.localeCompare(b.id)});
-const rest=(j.data||[]).filter(m=>!/deepseek/i.test(m.id)).slice(0,0);
-const list=[...ds,...rest];
+const all=(j.data||[]);
+const ds=all.filter(m=>/deepseek/i.test(m.id));
+const freeDs=ds.filter(m=>isFreeModel(m.id))
+.sort((a,b)=>dsScore(a)-dsScore(b)||a.id.localeCompare(b.id));
+const freeOther=all.filter(m=>isFreeModel(m.id)&&!/deepseek/i.test(m.id))
+.sort((a,b)=>a.id.localeCompare(b.id));
+const paidDs=ds.filter(m=>!isFreeModel(m.id))
+.sort((a,b)=>dsScore(a)-dsScore(b)||a.id.localeCompare(b.id));
+const list=[...freeDs,...freeOther,...paidDs];
 sel.innerHTML="";
 list.forEach(m=>{const o=document.createElement("option");o.value=m.id;
-o.textContent=m.id+(m.context_length?" · "+Math.round(m.context_length/1000)+"k":"");sel.appendChild(o)});
+o.textContent=m.id+(isFreeModel(m.id)?" · 免费":" · 付费");sel.appendChild(o)});
 if(!model||![...sel.options].some(o=>o.value===model)){
-model=(ds[0]&&ds[0].id)||(list[0]&&list[0].id)||"";persist()}
-sel.value=model;
-}catch(e){sel.innerHTML="<option value=''>拉取失败，稍后重试</option>";if(model){const o=document.createElement("option");o.value=model;o.textContent=model;sel.appendChild(o);sel.value=model}}
+model=(freeDs[0]&&freeDs[0].id)||(freeOther[0]&&freeOther[0].id)||
+(paidDs[0]&&paidDs[0].id)||"";persist()}
+sel.value=model;updateModelHint();
+}catch(e){sel.innerHTML="<option value=''>拉取失败，稍后重试</option>";
+if(model){const o=document.createElement("option");o.value=model;
+o.textContent=model+(isFreeModel(model)?" · 免费":" · 付费");
+sel.appendChild(o);sel.value=model;updateModelHint()}}
+}
+function updateModelHint(){
+const h=$("#modelHint");if(!h)return;
+if(!model){h.textContent="还没选模型。";return}
+h.innerHTML=isFreeModel(model)
+?"当前是<b>免费</b>模型，不收 token 费用（每天有次数限制）。"
+:"当前是<b>付费</b>模型，会从你的 OpenRouter 余额扣费。";
 }
 function buildMessages(){
 const s=cur(),msgs=[{role:"system",content:SYSTEM}];
@@ -297,7 +313,12 @@ return{thought:m[1].trim(),reply:(full.slice(0,m.index)+full.slice(m.index+m[0].
 }
 async function send(){
 const text=inputEl.value.trim();
-if(!text||!key||sending)return;
+if(!text||sending)return;
+if(!key){$("#setup").classList.add("open");return}
+if(!model){alert("先去设置里选一个模型");return}
+if(!isFreeModel(model)&&!store.get("paidOk_"+model,false)){
+if(!confirm("当前模型 "+model+" 是付费模型，会产生费用。继续发送吗？"))return;
+store.set("paidOk_"+model,true)}
 sending=true;sendBtn.disabled=true;
 const s=cur();
 s.msgs.push({r:"u",t:text,ts:Date.now()});
@@ -356,7 +377,7 @@ $("#btnThought").onclick=e=>{document.body.classList.toggle("hide-thought");
 e.currentTarget.classList.toggle("on");renderAll()};
 const openSheet=id=>$(id).classList.add("open"),
 closeSheets=()=>document.querySelectorAll(".sheet").forEach(s=>s.classList.remove("open"));
-document.querySelectorAll(".sheet.mask").forEach(m=>m.onclick=closeSheets);
+document.querySelectorAll(".sheet .mask").forEach(m=>m.onclick=closeSheets);
 $("#btnSessions").onclick=()=>{renderSessions();openSheet("#drawerSheet")};
 $("#btnSettings").onclick=()=>{openSettings();openSheet("#settingsSheet")};
 function renderSessions(){
@@ -377,6 +398,7 @@ $("#setKey").value=key;$("#setTemp").value=temp;$("#tempVal").textContent=temp;
 loadModels();
 }
 $("#setTemp").oninput=e=>$("#tempVal").textContent=e.target.value;
+$("#setModel").onchange=()=>{model=$("#setModel").value;updateModelHint()};
 $("#btnSave").onclick=()=>{
 key=$("#setKey").value.trim();model=$("#setModel").value;
 temp=parseFloat($("#setTemp").value);persist();closeSheets();
