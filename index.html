@@ -156,7 +156,7 @@ border-radius:12px;color:var(--ink);padding:11px 12px;font-size:14px;outline:non
 <select id="setProvider">
 <option value="openrouter">OpenRouter</option>
 <option value="deepseek">DeepSeek 官网直连</option>
-<option value="anthropic">Muse 官网直连 (Anthropic)</option>
+<option value="anthropic">Claude 官网直连 (Anthropic)</option>
 </select>
 </div>
 <div class="frow" id="claudeKeyRow" hidden>
@@ -205,7 +205,7 @@ border-radius:12px;color:var(--ink);padding:11px 12px;font-size:14px;outline:non
 <div class="frow"><label>服务商</label><select id="setupProvider">
 <option value="openrouter">OpenRouter</option>
 <option value="deepseek">DeepSeek 官网直连</option>
-<option value="anthropic">Muse 官网直连 (Anthropic)</option>
+<option value="anthropic">Claude 官网直连 (Anthropic)</option>
 </select></div>
 <ol id="setupStepsCl" hidden>
 <li>去 <a href="https://console.anthropic.com/" target="_blank">console.anthropic.com</a> 注册并充值</li>
@@ -324,9 +324,9 @@ if(!["deepseek-flash","deepseek-v4-pro"].includes(model)){model="deepseek-flash"
 sel.value=model;updateModelHint();return}
 if(provider==="anthropic"){
 sel.innerHTML="";
-[["claude-sonnet-4-6","Muse · 官网（均衡，推荐）"],
-["claude-haiku-4-5","Haiku 4.5 · 官网（最快最便宜）"],
-["claude-opus-4-8","Opus 4.8 · 官网（最强，最贵）"]].forEach(([id,label])=>{
+[["claude-sonnet-4-6","Claude Sonnet 4.6 · 官网（均衡，推荐）"],
+["claude-haiku-4-5","Claude Haiku 4.5 · 官网（最快最便宜）"],
+["claude-opus-4-8","Claude Opus 4.8 · 官网（最强，最贵）"]].forEach(([id,label])=>{
 const o=document.createElement("option");o.value=id;o.textContent=label;sel.appendChild(o)});
 if(!["claude-sonnet-4-6","claude-haiku-4-5","claude-opus-4-8"].includes(model)){model="claude-sonnet-4-6";persist()}
 sel.value=model;updateModelHint();return}
@@ -366,7 +366,7 @@ function updateModelHint(){
 const h=$("#modelHint");if(!h)return;
 if(!model){h.textContent="还没选模型。";return}
 if(provider==="anthropic"){
-h.innerHTML="Muse 官网直连 <b>"+model+"</b>：按量计费（Haiku 最便宜，Opus 最贵），比 DeepSeek 贵不少。";
+h.innerHTML="Claude 官网直连 <b>"+model+"</b>：按量计费（Haiku 最便宜，Opus 最贵），比 DeepSeek 贵不少。";
 return}
 if(provider==="deepseek"){
 h.innerHTML="官网直连 <b>"+model+"</b>：走你的 DeepSeek 账号试用额度/余额。";
