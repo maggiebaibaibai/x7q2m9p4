@@ -312,8 +312,14 @@ const all=(j.data||[]);
 const ds=all.filter(m=>/deepseek/i.test(m.id));
 const freeDs=ds.filter(m=>isFreeModel(m.id))
 .sort((a,b)=>dsScore(a)-dsScore(b)||a.id.localeCompare(b.id));
+const freePref=["qwen","gemma","nemotron-3-super","nemotron-3-ultra","nemotron",
+"inkling","laguna","ling","dots","liquid","apodex","cohere"];
+const freeRank=m=>{const id=m.id.toLowerCase();
+if(/content-safety|guard|moderation/.test(id))return 999;
+if(/(^|\/)code|code[^a-z]/.test(id))return 998;
+const i=freePref.findIndex(p=>id.includes(p));return i<0?100:i};
 const freeOther=all.filter(m=>isFreeModel(m.id)&&!/deepseek/i.test(m.id))
-.sort((a,b)=>a.id.localeCompare(b.id));
+.sort((a,b)=>freeRank(a)-freeRank(b)||a.id.localeCompare(b.id));
 const paidDs=ds.filter(m=>!isFreeModel(m.id))
 .sort((a,b)=>dsScore(a)-dsScore(b)||a.id.localeCompare(b.id));
 const list=[...freeDs,...freeOther,...paidDs];
